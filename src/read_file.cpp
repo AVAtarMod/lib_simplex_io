@@ -1,9 +1,7 @@
 #include <cstring>
 #include <fstream>
 #include <iostream>
-#include <sstream>
 #include <variant>
-#include <vector>
 
 #include "read_file.hpp"
 
@@ -438,22 +436,6 @@ std::string next_line(std::istream &in, const size_t line_length)
    return result;
 };
 
-struct ParsedFunction
-{
-   std::vector<std::pair<std::string, float>> function;
-   SimplexMethodSolver::MinMaxType function_type;
-   bool success = true;
-};
-
-struct ParsedConstraint
-{
-   typedef std::vector<float> SingleConstraint;
-   SingleConstraint constraint;
-   SimplexMethodSolver::ConstraintType constraint_type =
-       SimplexMethodSolver::NONE;
-   bool success = true;
-   bool is_last = false;
-};
 constexpr std::string_view label_prefix = "x_";
 std::string getLabelByIndex(const size_t index)
 {
@@ -461,7 +443,7 @@ std::string getLabelByIndex(const size_t index)
 }
 
 ParsedFunction readFunction(std::istream &in,
-                            const size_t buffer_size = 255)
+                            const size_t buffer_size)
 {
    ParsedFunction result;
    std::stringstream buffer;
@@ -521,7 +503,7 @@ size_t indexFromLabel(std::string_view label)
 }
 
 ParsedConstraint readConstraint(std::istream &in,
-                                const size_t buffer_size = 255)
+                                const size_t buffer_size)
 {
    ParsedConstraint result;
    std::stringstream buffer;

@@ -12,4 +12,4 @@ file(GLOB_RECURSE source_list "src/*.cpp")
 # create the static library
 add_library(${PROJECT_NAME} STATIC ${source_list})
 
-target_include_directories(${PROJECT_NAME} PRIVATE "include")
+target_include_directories(${PROJECT_NAME} BEFORE PRIVATE "include/lib_simplex_io")
