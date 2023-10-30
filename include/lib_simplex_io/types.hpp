@@ -52,6 +52,17 @@ namespace lib_simplex_io {
        */
       bool success = true;
    };
+
+   struct SimplexTableau
+   {
+      std::vector<std::vector<float>> table;
+      /**
+       * @brief Count of rows with function values. For
+       * first step of two-step simplex method there is 2 function - f
+       * and f', so function_count must be 2
+       */
+      size_t function_count = 1;
+   };
 } // namespace lib_simplex_io
 
 #endif // LIB_SIMPLEX_IO_TYPES
