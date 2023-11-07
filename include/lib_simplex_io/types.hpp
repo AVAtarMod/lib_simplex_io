@@ -62,6 +62,14 @@ namespace lib_simplex_io {
        * and f', so function_count must be 2
        */
       size_t function_count = 1;
+      size_t variable_count;
+      /**
+       * @brief Indexes of basis variables in table.
+       * Each index mapped with table as follows:
+       * table[i] - is row of values for basis variable
+       * basis_variables_indexes[i]
+       */
+      std::vector<size_t> basis_variables_indexes;
    };
 } // namespace lib_simplex_io
 

@@ -1,5 +1,5 @@
-#ifndef LIB_SIMPLEX_IO_READ_FILE_HPP
-#define LIB_SIMPLEX_IO_READ_FILE_HPP
+#ifndef LIB_SIMPLEX_IO_READ_DATA_HPP
+#define LIB_SIMPLEX_IO_READ_DATA_HPP
 
 #include "types.hpp"
 
@@ -11,4 +11,4 @@ namespace lib_simplex_io {
 
 } // namespace lib_simplex_io
 
-#endif // LIB_SIMPLEX_IO_READ_FILE_HPP
+#endif // LIB_SIMPLEX_IO_READ_DATA_HPP
