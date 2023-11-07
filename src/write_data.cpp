@@ -74,8 +74,8 @@ namespace lib_simplex_io {
    typedef decltype(SimplexTableau::basis_variables_indexes)
      st_vector_t;
    typedef decltype(SimplexTableau::variable_count) st_count_t;
-   st_vector_t invertBasisVariables(st_vector_t basis_variables,
-                                    st_count_t total_variables)
+   st_vector_t invertBasisVariables(
+     const st_vector_t& basis_variables, st_count_t total_variables)
    {
       size_t size = basis_variables.size();
 
@@ -100,6 +100,21 @@ namespace lib_simplex_io {
       result.shrink_to_fit();
       return result;
    }
+   typedef decltype(SimplexTableau::table) st_table_t;
+   std::string getMaxOfIntegerPartStr(const st_table_t& table)
+   {
+      const size_t size = table.size();
+      if (size == 0)
+         return 0;
+      using table_el_t = st_table_t::value_type::value_type;
+      table_el_t max = 0;
+      for (auto&& i : table) {
+         if (i.size() == 0)
+            return "";
+         max = std::max(*std::max_element(i.cbegin(), i.cend()), max);
+      }
+      return std::to_string(static_cast<long>(max));
+   }
    bool writeSimplexTableau(std::ostream& out,
                             const SimplexTableau& tableau)
    {
@@ -117,7 +132,15 @@ namespace lib_simplex_io {
                             tableau.basis_variables_indexes.cbegin(),
                             tableau.basis_variables_indexes.cend()))
              .size();
-         out << '\n';
+         {
+            auto max_number_len =
+              getMaxOfIntegerPartStr(tableau.table).size();
+            size_t precision = (max_number_len == 1)
+                                 ? out_width - max_number_len
+                                 : out_width - max_number_len + 1;
+            out << std::setprecision(precision);
+         }
+
          out << constructSpace(max_basis_len) << " | ";
          for (auto&& i :
               invertBasisVariables(tableau.basis_variables_indexes,
@@ -126,7 +149,6 @@ namespace lib_simplex_io {
          }
          out << "free val" << '\n';
 
-         out << std::setprecision(out_width);
          int coefs_size = 0, prev_coefs_length = -1;
          for (size_t i = 0; i < basis_vars_count; ++i) {
             coefs_size = tableau.table[i].size();
