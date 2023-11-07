@@ -3,7 +3,8 @@
 #include <iostream>
 #include <variant>
 
-#include "include/lib_simplex_io/read_data.hpp"
+#include "read_data.hpp"
+#include "parser_types.hpp"
 
 namespace lib_simplex_io {
 
@@ -88,31 +89,6 @@ namespace lib_simplex_io {
       return stream.str();
    }
 
-   struct Coefficient
-   {
-      double val;
-      Coefficient(double value = 0) : val(value) {};
-   };
-   struct Variable
-   {
-      std::string_view label;
-   };
-   enum ParserState
-   {
-      READ_NULL,
-      READ_COEFF = 1,
-      READ_VARIABLE = (1 << 1),
-      READ_MIN = (1 << 2),
-      READ_MAX = (1 << 3),
-      READ_CONSTRAINT = (1 << 4),
-      READ_COMMENT = (1 << 5),
-      READ_COMMA = (1 << 6),
-   };
-   typedef std::variant<Coefficient, Variable, MinMaxType,
-                        ConstraintType, ParserState>
-     ParsedSymbol;
-
-   std::string_view min_str = "->min", max_str = "->max";
    enum ReturnAction
    {
       RA_SUCCESS,
@@ -121,14 +97,14 @@ namespace lib_simplex_io {
       RA_LOOP_BREAK,
    };
 
-   ReturnAction parseCoef(const IOChar& input, ParserState& s,
+   ReturnAction parseCoef(const IOChar& input, ParsedSymbolType& s,
                           size_t& digit_count, size_t& dot_count)
    {
       ReturnAction action = RA_SUCCESS;
       bool valid = true;
       CharType t = { input.data };
 
-      if (s == READ_COEFF) {
+      if (s == TYPE_COEFF) {
          if (t == CharType::DIGIT)
             ++digit_count;
          else if (t == CharType::DOT) {
@@ -140,7 +116,7 @@ namespace lib_simplex_io {
             valid = false;
       } else {
          if (t == CharType::DIGIT) {
-            s = READ_COEFF;
+            s = TYPE_COEFF;
             ++digit_count;
          } else
             action = RA_ERROR_UNKNOWN_SYMBOL;
@@ -149,7 +125,7 @@ namespace lib_simplex_io {
          action = RA_LOOP_BREAK;
       return action;
    }
-   ReturnAction parseConstraint(const IOChar& input, ParserState& s)
+   ReturnAction parseConstraint(const IOChar& input, ParsedSymbolType& s)
    {
       // Read last part of "<=" or ">="
       if (input.data == '=')
@@ -157,28 +133,28 @@ namespace lib_simplex_io {
       else
          return RA_ERROR_UNKNOWN_SYMBOL;
    }
-   ReturnAction parseMinmax(const IOChar& input, ParserState& s,
+   ReturnAction parseMinmax(const IOChar& input, ParsedSymbolType& s,
                             size_t& minmax_index)
    {
       ReturnAction action = RA_SUCCESS;
       bool valid = true;
       CharType t = { input.data };
 
-      if (s & (READ_MIN | READ_MAX) &&
-          (s & (~(READ_MIN | READ_MAX))) == 0) {
-         if (s == (READ_MIN | READ_MAX)) {
+      if (s & (TYPE_MIN | TYPE_MAX) &&
+          (s & (~(TYPE_MIN | TYPE_MAX))) == 0) {
+         if (s == (TYPE_MIN | TYPE_MAX)) {
             if (input.data == min_str[minmax_index] &&
                 input.data == max_str[minmax_index])
-               s == READ_MIN | READ_MAX;
+               s == TYPE_MIN | TYPE_MAX;
             else if (input.data == min_str[minmax_index])
-               s = READ_MIN;
+               s = TYPE_MIN;
             else if (input.data == max_str[minmax_index])
-               s = READ_MAX;
+               s = TYPE_MAX;
             else
                valid = false;
             if (valid)
                ++minmax_index;
-         } else if (s == READ_MIN &&
+         } else if (s == TYPE_MIN &&
                     input.data == min_str[minmax_index])
             ++minmax_index;
          else if (input.data == max_str[minmax_index]) {
@@ -187,7 +163,7 @@ namespace lib_simplex_io {
             valid = false;
       } else {
          if (t == CharType::GREATER) {
-            s = static_cast<ParserState>(READ_MIN | READ_MAX);
+            s = static_cast<ParsedSymbolType>(TYPE_MIN | TYPE_MAX);
             // in next call we expect input.data = 'm', so set index =
             // 2
             minmax_index = 2;
@@ -216,17 +192,17 @@ namespace lib_simplex_io {
          }
       }
    }
-   ParsedSymbol construct(const ParserState& s, std::string& buffer)
+   ParsedSymbol construct(const ParsedSymbolType& s, std::string& buffer)
    {
       filterSpaces(buffer);
-      if (s == READ_COEFF) {
+      if (s == TYPE_COEFF) {
          return Coefficient(std::stod(buffer));
-      } else if (s == READ_MIN || s == READ_MAX) {
+      } else if (s == TYPE_MIN || s == TYPE_MAX) {
          if (buffer == min_str)
             return MIN;
          else if (buffer == max_str)
             return MAX;
-      } else if (s == READ_CONSTRAINT) {
+      } else if (s == TYPE_CONSTRAINT) {
          if (buffer == ">=")
             return GREATER_OR_EQUAL;
          else if (buffer == "<=")
@@ -244,7 +220,7 @@ namespace lib_simplex_io {
       tmp.resize(buffer_size);
 
       ParsedSymbol result;
-      ParserState s = READ_NULL;
+      ParsedSymbolType s = TYPE_NULL;
       bool valid = true, parsingCoefValue = false;
       ReturnAction action = RA_ERROR_UNKNOWN_SYMBOL;
 
@@ -257,42 +233,42 @@ namespace lib_simplex_io {
             break;
          }
          if (input.data == '#') {
-            s = READ_COMMENT;
+            s = TYPE_COMMENT;
             in.getline(tmp.data(), buffer_size);
             break;
          }
 
          if (isspace(input.data)) {
             isCharParsed = true;
-            if (s == READ_COEFF && parsingCoefValue)
+            if (s == TYPE_COEFF && parsingCoefValue)
                break;
-            if (s == READ_COMMA)
+            if (s == TYPE_COMMA)
                break;
          }
 
-         if (!isCharParsed && s == READ_NULL) {
+         if (!isCharParsed && s == TYPE_NULL) {
             CharType t(input.data);
             if (t == CharType::DIGIT) {
-               s = READ_COEFF;
+               s = TYPE_COEFF;
                parsingCoefValue = true;
             }
             if (t == CharType::MINUS) {
-               s = static_cast<ParserState>(READ_COEFF | READ_MIN |
-                                            READ_MAX);
+               s = static_cast<ParsedSymbolType>(TYPE_COEFF | TYPE_MIN |
+                                            TYPE_MAX);
             } else if (t == CharType::PLUS) {
-               s = READ_COEFF;
+               s = TYPE_COEFF;
             } else if (t == CharType::GREATER ||
                        t == CharType::LESS || t == CharType::EQUAL) {
-               s = READ_CONSTRAINT;
+               s = TYPE_CONSTRAINT;
             } else if (t == CharType::COMMA) {
-               s = READ_COMMA;
+               s = TYPE_COMMA;
             }
-            if (s != READ_NULL)
+            if (s != TYPE_NULL)
                isCharParsed = true;
          }
          if (!isCharParsed) {
             switch (s) {
-               case READ_COEFF:
+               case TYPE_COEFF:
                   action =
                     parseCoef(input, s, digit_count, dot_count);
                   if (action == RA_SUCCESS) {
@@ -302,15 +278,15 @@ namespace lib_simplex_io {
                      action = RA_SUCCESS;
                   }
                   break;
-               case READ_MIN | READ_MAX:
-               case READ_MIN:
-               case READ_MAX:
+               case TYPE_MIN | TYPE_MAX:
+               case TYPE_MIN:
+               case TYPE_MAX:
                   action = parseMinmax(input, s, minmax_index);
                   break;
-               case READ_CONSTRAINT:
+               case TYPE_CONSTRAINT:
                   action = parseConstraint(input, s);
                   break;
-               case READ_COEFF | READ_MIN | READ_MAX:
+               case TYPE_COEFF | TYPE_MIN | TYPE_MAX:
                   action =
                     parseCoef(input, s, digit_count, dot_count);
                   if (action == RA_ERROR_UNKNOWN_SYMBOL) {
@@ -326,16 +302,16 @@ namespace lib_simplex_io {
             if (action == RA_LOOP_BREAK)
                break;
          }
-         if (s == READ_COEFF && input.data == ',')
+         if (s == TYPE_COEFF && input.data == ',')
             break;
          buffer[i] = input.data;
-         if (s == READ_MIN && minmax_index >= min_str.size())
+         if (s == TYPE_MIN && minmax_index >= min_str.size())
             break;
-         else if (s == READ_MAX && minmax_index >= max_str.size())
+         else if (s == TYPE_MAX && minmax_index >= max_str.size())
             break;
-         else if (s == READ_CONSTRAINT && input.data == '=')
+         else if (s == TYPE_CONSTRAINT && input.data == '=')
             break;
-         else if (s == READ_COMMA)
+         else if (s == TYPE_COMMA)
             break;
       }
       if (!valid) {
@@ -392,12 +368,6 @@ namespace lib_simplex_io {
       return result;
    };
 
-   constexpr std::string_view label_prefix = "x_";
-   std::string getLabelByIndex(const size_t index)
-   {
-      return label_prefix.data() + std::to_string(index);
-   }
-
    ParsedFunction readFunction(std::istream& in,
                                const size_t buffer_size)
    {
@@ -417,7 +387,7 @@ namespace lib_simplex_io {
          ParsedSymbol s = next_symbol(buffer, buffer_size);
          switch (s.index()) {
             case 0:
-               label = getLabelByIndex(var_index);
+               label = labelFromIndex(var_index);
                result.function.push_back(
                  { label, std::get<0>(s).val });
                ++var_index;
@@ -432,7 +402,7 @@ namespace lib_simplex_io {
                   buffer.setstate(std::ios::eofbit);
                break;
             case 4:
-               if (std::get<4>(s) == READ_COMMENT) {
+               if (std::get<4>(s) == TYPE_COMMENT) {
                   continue;
                } else {
                   if (buffer)
@@ -445,11 +415,6 @@ namespace lib_simplex_io {
       } while (buffer);
 
       return result;
-   }
-
-   size_t indexFromLabel(std::string_view label)
-   {
-      return std::atoi(label.begin() + label_prefix.size());
    }
 
    ParsedConstraint readConstraint(std::istream& in,
@@ -492,13 +457,13 @@ namespace lib_simplex_io {
                isTypeParsed = true;
                break;
             case 4:
-               if (std::get<4>(s) == READ_COMMENT) {
+               if (std::get<4>(s) == TYPE_COMMENT) {
                   if (!isParsingCompleted) {
                      result.success = false;
                      buffer.setstate(std::ios::eofbit);
                   }
                }
-               if (std::get<4>(s) == READ_COMMA) {
+               if (std::get<4>(s) == TYPE_COMMA) {
                   result.is_last = true;
                   ++comma_count;
                } else {
