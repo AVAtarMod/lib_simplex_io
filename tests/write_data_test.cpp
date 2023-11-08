@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "lib_simplex_io/write_data.hpp"
+#include "simplex_io/write_data.hpp"
 
 TEST(WriteData, test1){
    using namespace lib_simplex_io;
