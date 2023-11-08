@@ -3,7 +3,7 @@
 #include <sstream>
 #include <vector>
 
-namespace lib_simplex_io {
+namespace simplex_io {
    enum MinMaxType
    {
       MIN,
@@ -71,6 +71,6 @@ namespace lib_simplex_io {
        */
       std::vector<size_t> basis_variables_indexes;
    };
-} // namespace lib_simplex_io
+} // namespace simplex_io
 
 #endif // LIB_SIMPLEX_IO_TYPES

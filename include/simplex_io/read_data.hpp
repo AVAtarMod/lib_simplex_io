@@ -1,14 +1,14 @@
-#ifndef LIB_SIMPLEX_IO_READ_DATA_HPP
-#define LIB_SIMPLEX_IO_READ_DATA_HPP
+#ifndef LIB_SIMPLEX_IO_READ_DATA
+#define LIB_SIMPLEX_IO_READ_DATA
 
 #include "types.hpp"
 
-namespace lib_simplex_io {
+namespace simplex_io {
    ParsedFunction readFunction(std::istream& in,
                                const size_t buffer_size = 255);
    ParsedConstraint readConstraint(std::istream& in,
                                    const size_t buffer_size = 255);
 
-} // namespace lib_simplex_io
+} // namespace simplex_io
 
-#endif // LIB_SIMPLEX_IO_READ_DATA_HPP
+#endif // LIB_SIMPLEX_IO_READ_DATA

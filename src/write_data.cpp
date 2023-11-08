@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <iomanip>
 
-namespace lib_simplex_io {
+namespace simplex_io {
    std::ostream& operator<<(std::ostream& out,
                             const FunctionBase& function)
    {
@@ -188,4 +188,4 @@ namespace lib_simplex_io {
       }
       return true;
    }
-} // namespace lib_simplex_io
+} // namespace simplex_io

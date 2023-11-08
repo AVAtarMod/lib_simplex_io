@@ -6,7 +6,7 @@
 
 #include "types.hpp"
 
-namespace lib_simplex_io {
+namespace simplex_io {
    constexpr std::string_view min_str = "->min", max_str = "->max";
    constexpr std::string_view equal_str = "=",
                               lesser_or_equal_str = "<=",
@@ -72,6 +72,6 @@ namespace lib_simplex_io {
    {
       return label_prefix.data() + std::to_string(index);
    }
-} // namespace lib_simplex_io
+} // namespace simplex_io
 
 #endif // LIB_SIMPLEX_IO_SRC_PARSER_TYPES_HPP

@@ -3,7 +3,7 @@
 #include "simplex_io/write_data.hpp"
 
 TEST(WriteData, test1){
-   using namespace lib_simplex_io;
+   using namespace simplex_io;
    SimplexTableau t;
    t.basis_variables_indexes = { 1, 2 };
    t.variable_count = 4;

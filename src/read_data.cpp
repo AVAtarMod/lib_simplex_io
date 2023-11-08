@@ -6,7 +6,7 @@
 #include "read_data.hpp"
 #include "parser_types.hpp"
 
-namespace lib_simplex_io {
+namespace simplex_io {
 
    struct IOChar
    {
@@ -483,4 +483,4 @@ namespace lib_simplex_io {
 
       return result;
    }
-} // namespace lib_simplex_io
+} // namespace simplex_io

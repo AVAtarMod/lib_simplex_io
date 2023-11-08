@@ -1,9 +1,9 @@
-#ifndef LIB_SIMPLEX_IO_WRITE_DATA_HPP
-#define LIB_SIMPLEX_IO_WRITE_DATA_HPP
+#ifndef LIB_SIMPLEX_IO_WRITE_DATA
+#define LIB_SIMPLEX_IO_WRITE_DATA
 #include <ostream>
 
 #include "types.hpp"
-namespace lib_simplex_io {
+namespace simplex_io {
    std::ostream& operator<<(std::ostream& out,
                             const FunctionBase& function);
    std::ostream& operator<<(std::ostream& out,
@@ -16,6 +16,6 @@ namespace lib_simplex_io {
                         const ConstraintBase& constraint);
    bool writeSimplexTableau(std::ostream& out,
                             const SimplexTableau& tableau);
-} // namespace lib_simplex_io
+} // namespace simplex_io
 
-#endif // LIB_SIMPLEX_IO_WRITE_DATA_HPP
+#endif // LIB_SIMPLEX_IO_WRITE_DATA
