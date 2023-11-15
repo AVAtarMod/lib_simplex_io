@@ -16,6 +16,11 @@ namespace simplex_io {
       } type = COMMON;
       FunctionBase function;
       std::vector<ConstraintBase> constraints;
+      bool operator==(const Problem& p) const;
+      bool operator!=(const Problem& p) const
+      {
+         return !(*this == p);
+      }
    };
    bool isStandardProblem(const Problem& problem);
    bool isCanonicalProblem(const Problem& problem);
