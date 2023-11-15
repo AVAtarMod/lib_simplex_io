@@ -3,8 +3,8 @@
 #include <iostream>
 #include <variant>
 
-#include "read_data.hpp"
 #include "parser_types.hpp"
+#include "read_data.hpp"
 
 namespace simplex_io {
 
@@ -125,7 +125,8 @@ namespace simplex_io {
          action = RA_LOOP_BREAK;
       return action;
    }
-   ReturnAction parseConstraint(const IOChar& input, ParsedSymbolType& s)
+   ReturnAction parseConstraint(const IOChar& input,
+                                ParsedSymbolType& s)
    {
       // Read last part of "<=" or ">="
       if (input.data == '=')
@@ -192,7 +193,8 @@ namespace simplex_io {
          }
       }
    }
-   ParsedSymbol construct(const ParsedSymbolType& s, std::string& buffer)
+   ParsedSymbol construct(const ParsedSymbolType& s,
+                          std::string& buffer)
    {
       filterSpaces(buffer);
       if (s == TYPE_COEFF) {
@@ -253,8 +255,8 @@ namespace simplex_io {
                parsingCoefValue = true;
             }
             if (t == CharType::MINUS) {
-               s = static_cast<ParsedSymbolType>(TYPE_COEFF | TYPE_MIN |
-                                            TYPE_MAX);
+               s = static_cast<ParsedSymbolType>(TYPE_COEFF |
+                                                 TYPE_MIN | TYPE_MAX);
             } else if (t == CharType::PLUS) {
                s = TYPE_COEFF;
             } else if (t == CharType::GREATER ||
@@ -475,9 +477,13 @@ namespace simplex_io {
          }
          auto count_diff = static_cast<long>(var_index) -
                            static_cast<long>(comma_count);
-         if (result.is_last && (count_diff > 1 || count_diff < 0)) {
-            result.success = false;
-            buffer.setstate(std::ios::eofbit);
+         if (result.is_last && (count_diff != 1 && count_diff != 0)) {
+            bool skip =
+              (isTypeParsed && (s.index() == 3 || s.index() == 0));
+            if (!skip) {
+               result.success = false;
+               buffer.setstate(std::ios::eofbit);
+            }
          }
       } while (buffer);
 

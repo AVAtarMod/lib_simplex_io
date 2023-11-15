@@ -70,7 +70,7 @@ namespace simplex_io {
    }
    inline std::string labelFromIndex(const size_t index)
    {
-      return label_prefix.data() + std::to_string(index);
+      return label_prefix.data() + std::to_string(index+1);
    }
 } // namespace simplex_io
 
