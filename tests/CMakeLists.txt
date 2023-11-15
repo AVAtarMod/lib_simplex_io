@@ -2,9 +2,9 @@ project(lib_simplex_io_tests)
 enable_testing()
 # For Windows: Prevent overriding the parent project's compiler/linker settings
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-
+file(GLOB_RECURSE src "*.cpp")
 add_executable(${PROJECT_NAME}
-   write_data_test.cpp
+   ${src}
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/include")
