@@ -67,7 +67,14 @@
          "span": "cpp",
          "variant": "cpp",
          "map": "cpp",
-         "semaphore": "cpp"
+         "semaphore": "cpp",
+         "any": "cpp",
+         "condition_variable": "cpp",
+         "forward_list": "cpp",
+         "unordered_set": "cpp",
+         "mutex": "cpp",
+         "stop_token": "cpp",
+         "thread": "cpp"
       }
    }
 }
