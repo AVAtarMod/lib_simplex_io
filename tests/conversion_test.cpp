@@ -104,3 +104,21 @@ TEST_F(Conversion, toCanonical2)
    ASSERT_NE(result, non_std2);
    ASSERT_EQ(result, converted_non_std2);
 }
+
+TEST_F(Conversion, getBasisVariables1)
+{
+   std::vector<size_t> expected = { 3, 4 };
+
+   auto basis = getBasisVariablesVector(converted_non_std1);
+
+   ASSERT_EQ(basis, expected);
+}
+
+TEST_F(Conversion, getBasisVariables2)
+{
+   std::vector<size_t> expected = { 2, 3, 4 };
+
+   auto basis = getBasisVariablesVector(converted_non_std2);
+
+   ASSERT_EQ(basis, expected);
+}

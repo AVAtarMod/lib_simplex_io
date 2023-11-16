@@ -22,6 +22,9 @@ namespace simplex_io {
          return !(*this == p);
       }
    };
+   
+   std::vector<size_t> getBasisVariablesVector(
+     const Problem& problem);
    bool isStandardProblem(const Problem& problem);
    bool isCanonicalProblem(const Problem& problem);
    /**
