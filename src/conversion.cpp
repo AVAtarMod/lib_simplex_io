@@ -46,14 +46,16 @@ bool simplex_io::isStandardProblem(const Problem& problem)
    return is_min && is_correct_constr &&
           isAllVarsNonnegative(problem.constraints);
 }
-bool simplex_io::isCanonicalProblem(const Problem& problem)
+std::vector<size_t> simplex_io::getBasisVariablesVector(
+  const Problem& problem)
 {
    const size_t size = problem.constraints.size();
    auto& c = problem.constraints;
-   if (size < 1 || size > c[0].constraint.size())
-      return false;
+   if (size < 2 || size > c[0].constraint.size())
+      return {};
    const size_t c_size = c[0].constraint.size();
-   std::vector<bool> basis_var(c_size - 1);
+   std::vector<size_t> result;
+   result.reserve(c_size - 1);
    for (size_t coef_i = 0; coef_i < c_size - 1; ++coef_i) {
       std::vector<size_t> nonzero_indexes;
       if (problem.function.function.size() > coef_i &&
@@ -64,14 +66,15 @@ bool simplex_io::isCanonicalProblem(const Problem& problem)
             nonzero_indexes.push_back(coef_i);
       }
       if (nonzero_indexes.size() == 1 && nonzero_indexes[0] != 0)
-         basis_var[nonzero_indexes[0]] = true;
+         result.push_back(nonzero_indexes[0]);
    }
-   size_t basis_count = 0;
-   for (size_t i = 0; i < c_size; ++i) {
-      if (basis_var[i])
-         ++basis_count;
-   }
-   return isStandardProblem(problem) && (basis_count == size - 1);
+   return result;
+}
+bool simplex_io::isCanonicalProblem(const Problem& problem)
+{
+   const size_t size = problem.constraints.size();
+   auto basis_count = getBasisVariablesVector(problem).size();
+   return isStandardProblem(problem) && (basis_count >= size - 1);
 }
 bool simplex_io::Problem::operator==(const Problem& p) const
 {
