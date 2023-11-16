@@ -66,7 +66,7 @@ namespace simplex_io {
    }
    inline size_t indexFromLabel(std::string_view label)
    {
-      return std::atoi(label.begin() + label_prefix.size());
+      return std::atoi(label.data() + label_prefix.size());
    }
    inline std::string labelFromIndex(const size_t index)
    {
