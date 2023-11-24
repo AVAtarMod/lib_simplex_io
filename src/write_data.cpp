@@ -78,26 +78,10 @@ namespace simplex_io {
      const st_vector_t& basis_variables, st_count_t total_variables)
    {
       size_t size = basis_variables.size();
-
-      if (size >= total_variables)
-         return {};
-      auto it = basis_variables.cbegin();
-      st_vector_t result;
-      result.reserve(total_variables);
+      st_vector_t result(total_variables);
       for (size_t i = 0; i < total_variables; ++i) {
-         st_count_t val =
-           (it == basis_variables.cend()) ? total_variables : *it;
-         if (i < val) {
-            result.push_back(i);
-         } else if (i == val) {
-            ++it;
-            continue;
-         } else {
-            throw std::runtime_error(
-              "ERROR (invertBasisVariables): basis_variables contain invalid indexes");
-         }
+         result[i] = i;
       }
-      result.shrink_to_fit();
       return result;
    }
    typedef decltype(SimplexTableau::table) st_table_t;
