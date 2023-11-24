@@ -6,7 +6,7 @@ bool isAllVarsNonnegative(
   const decltype(Problem::constraints)& constraints)
 {
    const size_t size = constraints.size();
-   if (size < 1)
+   if (size < 2)
       return false;
    if (constraints[size - 1].is_last &&
        constraints[size - 1].constraint.size() !=
@@ -25,8 +25,8 @@ bool simplex_io::isStandardProblem(const Problem& problem)
    bool is_min = problem.function.function_type == MIN;
    bool is_correct_constr = true;
    const size_t size = problem.constraints.size();
-   if (size > 2) {
-      for (size_t i = 0; i < size - 1; ++i) {
+   if (size > 0) {
+      for (size_t i = 0; i < size; ++i) {
          const auto& e = problem.constraints[i];
          try {
             if (e.constraint_type != ConstraintType::EQUAL)
@@ -43,19 +43,28 @@ bool simplex_io::isStandardProblem(const Problem& problem)
       }
    } else
       is_correct_constr = false;
-   return is_min && is_correct_constr &&
-          isAllVarsNonnegative(problem.constraints);
+   return is_min && is_correct_constr;
+   //return is_min && is_correct_constr &&
+   //       isAllVarsNonnegative(problem.constraints);
 }
 std::vector<size_t> simplex_io::getBasisVariablesVector(
   const Problem& problem)
 {
    const size_t size = problem.constraints.size();
    auto& c = problem.constraints;
-   if (size < 2 || size > c[0].constraint.size())
-      return {};
-   const size_t c_size = c[0].constraint.size();
+   //if (size < 2 || size > c[0].constraint.size())
+   //   return {};
+   if (size < 2)
+       return {};
+
+   //const size_t c_size = c[0].constraint.size();
+   size_t c_size = problem.function.function.size();
+   for (int i = 0; i < size; i++)
+       if (c[i].constraint.size() > c_size)
+           c_size = c[i].constraint.size();
+
    std::vector<size_t> result;
-   result.reserve(c_size - 1);
+   /*result.reserve(c_size - 1);
    for (size_t coef_i = 0; coef_i < c_size - 1; ++coef_i) {
       std::vector<size_t> nonzero_indexes;
       if (problem.function.function.size() > coef_i &&
@@ -64,9 +73,21 @@ std::vector<size_t> simplex_io::getBasisVariablesVector(
       for (size_t i = 0; i < size - 1; ++i) {
          if (c[i].constraint[coef_i] != 0)
             nonzero_indexes.push_back(coef_i);
-      }
       if (nonzero_indexes.size() == 1 && nonzero_indexes[0] != 0)
          result.push_back(nonzero_indexes[0]);
+   }*/
+   result.resize(size);
+   for (size_t coef_i = 0; coef_i < c_size - 1; ++coef_i) {
+       size_t count = 0, line;
+       for (size_t i = 0; i < size; ++i) {
+           if (c[i].constraint.size() > coef_i + 1 &&
+               c[i].constraint[coef_i] != 0) {
+               count++;
+               line = i;
+           }
+       }
+       if (count == 1)
+           result[line] = coef_i;
    }
    return result;
 }
