@@ -146,62 +146,64 @@ bool simplex_io::Problem::operator==(const Problem& p) const
 }
 Problem simplex_io::convertToStandard(const Problem& problem)
 {
-   if (isStandardProblem(problem)) {
-      if (problem.type != Problem::STANDARD) {
-         Problem result = problem;
-         result.type = Problem::STANDARD;
-         return result;
-      } else
-         return problem;
-   }
+    if (isStandardProblem(problem)) {
+        if (problem.type != Problem::STANDARD) {
+            Problem result = problem;
+            result.type = Problem::STANDARD;
+            return result;
+        }
+        else
+            return problem;
+    }
 
-   Problem result = problem;
-   if (result.function.function_type == MAX) {
-      const size_t size = result.constraints.size();
-      const size_t f_size = result.function.function.size();
-      for (size_t i = 0; i < f_size; ++i) {
-         result.function.function[i].second *= -1;
-      }
-      result.function.function_type = MIN;
-      if (size < 2)
-         throw std::runtime_error(
-           "ERROR (simplex_io::convertToStandard): Invalid problem received, constraints count < 2");
-      for (size_t i = 0; i < size - 1; ++i) {
-         auto& e = result.constraints[i];
-         size_t e_size = e.constraint.size();
-         if (e.constraint[e_size - 1] < 0) {
+    Problem result = problem;
+    const size_t size = result.constraints.size();
+    const size_t f_size = result.function.function.size();
+    if (result.function.function_type == MAX) {
+        for (size_t i = 0; i < f_size; ++i) {
+            result.function.function[i].second *= -1;
+        }
+        result.function.function_type = MIN;
+    }
+    if (size < 2)
+        throw std::runtime_error(
+            "ERROR (simplex_io::convertToStandard): Invalid problem received, constraints count < 2");
+    for (size_t i = 0; i < size; ++i) {
+        auto& e = result.constraints[i];
+        size_t e_size = e.constraint.size();
+        if (e.constraint[e_size - 1] < 0) {
             for (size_t e_i = 0; e_i < e_size; ++e_i)
-               e.constraint[e_i] *= -1;
+                e.constraint[e_i] *= -1;
             if (e.constraint_type == LESSER_OR_EQUAL)
-               e.constraint_type = GREATER_OR_EQUAL;
+                e.constraint_type = GREATER_OR_EQUAL;
             else if (e.constraint_type == GREATER_OR_EQUAL)
-               e.constraint_type = LESSER_OR_EQUAL;
-         }
-         if (e.constraint_type == LESSER_OR_EQUAL) {
+                e.constraint_type = LESSER_OR_EQUAL;
+        }
+        if (e.constraint_type == LESSER_OR_EQUAL) {
             e.constraint.insert(e.constraint.cend() - 1, 1);
-            for (size_t c_i = 0; c_i < size - 1; ++c_i) {
-               if (c_i == i)
-                  continue;
-               result.constraints[c_i].constraint.insert(
-                 result.constraints[c_i].constraint.cend() - 1, 0);
+            for (size_t c_i = 0; c_i < size; ++c_i) {
+                if (c_i == i)
+                    continue;
+                result.constraints[c_i].constraint.insert(
+                    result.constraints[c_i].constraint.cend() - 1, 0);
             }
-            result.constraints[size - 1].constraint.insert(
-              result.constraints[size - 1].constraint.cend() - 1, 1);
-         } else if (e.constraint_type == GREATER_OR_EQUAL) {
+            //result.constraints[size - 1].constraint.insert(
+            //  result.constraints[size - 1].constraint.cend() - 1, 1);
+        }
+        else if (e.constraint_type == GREATER_OR_EQUAL) {
             e.constraint.insert(e.constraint.cend() - 1, -1);
             for (size_t c_i = 0; c_i < size - 1; ++c_i) {
-               if (c_i == i)
-                  continue;
-               result.constraints[c_i].constraint.insert(
-                 result.constraints[c_i].constraint.cend() - 1, 0);
+                if (c_i == i)
+                    continue;
+                result.constraints[c_i].constraint.insert(
+                    result.constraints[c_i].constraint.cend() - 1, 0);
             }
-            result.constraints[size - 1].constraint.push_back(1);
-         }
-         e.constraint_type = EQUAL;
-      }
-      result.type = Problem::STANDARD;
-   }
-   return result;
+            //result.constraints[size - 1].constraint.push_back(1);
+        }
+        e.constraint_type = EQUAL;
+    }
+    result.type = Problem::STANDARD;
+    return result;
 }
 Problem simplex_io::convertToCanonical(const Problem& problem)
 {
