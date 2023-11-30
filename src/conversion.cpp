@@ -76,7 +76,7 @@ std::vector<size_t> simplex_io::getBasisVariablesVector(
       if (nonzero_indexes.size() == 1 && nonzero_indexes[0] != 0)
          result.push_back(nonzero_indexes[0]);
    }*/
-   result.resize(size);
+   result.resize(size, -1);
    for (size_t coef_i = 0; coef_i < c_size - 1; ++coef_i) {
        size_t count = 0, line;
        for (size_t i = 0; i < size; ++i) {
@@ -86,7 +86,7 @@ std::vector<size_t> simplex_io::getBasisVariablesVector(
                line = i;
            }
        }
-       if (count == 1)
+       if (count == 1 && c[line].constraint[coef_i] > 0.)
            result[line] = coef_i;
    }
    return result;
@@ -94,8 +94,10 @@ std::vector<size_t> simplex_io::getBasisVariablesVector(
 bool simplex_io::isCanonicalProblem(const Problem& problem)
 {
    const size_t size = problem.constraints.size();
-   auto basis_count = getBasisVariablesVector(problem).size();
-   return isStandardProblem(problem) && (basis_count >= size - 1);
+   auto vec = getBasisVariablesVector(problem);
+   if (std::find(vec.cbegin(), vec.cend(), -1) == vec.cend())
+       return isStandardProblem(problem);
+   return false;
 }
 bool simplex_io::Problem::operator==(const Problem& p) const
 {
@@ -192,7 +194,7 @@ Problem simplex_io::convertToStandard(const Problem& problem)
         }
         else if (e.constraint_type == GREATER_OR_EQUAL) {
             e.constraint.insert(e.constraint.cend() - 1, -1);
-            for (size_t c_i = 0; c_i < size - 1; ++c_i) {
+            for (size_t c_i = 0; c_i < size; ++c_i) {
                 if (c_i == i)
                     continue;
                 result.constraints[c_i].constraint.insert(
